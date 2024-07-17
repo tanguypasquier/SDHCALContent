@@ -212,7 +212,7 @@ namespace sdhcal_content
 
   private:
     float                       m_lowEnergyCut;
-    pandora::FloatVector                m_sdhcalThresholds;             ///< The sdhcal threshold values
+    bool              m_useDigi;            ///< Boolean to choose if you use digi collections or not
   };
 
   //------------------------------------------------------------------------------------------------------------------------------------------
@@ -257,11 +257,12 @@ namespace sdhcal_content
      *  @param  The cluster cos phi
      */
     float GetCorrectedHitNumber(int nHit, float cosPhi) const;
-
-
+    
   private:
     float                       m_lowEnergyCut;
-    pandora::FloatVector                m_sdhcalThresholds;             ///< The sdhcal threshold values
+    bool              m_useDigi;            ///< Boolean to choose if you use digi collections or not
+    bool              m_thetaBefore;            ///< Boolean to specify if the theta correction has been called before the phi correction
+    
   };
 
   //------------------------------------------------------------------------------------------------------------------------------------------
@@ -310,7 +311,8 @@ namespace sdhcal_content
 
   private:
     float                       m_lowEnergyCut;
-    pandora::FloatVector                m_sdhcalThresholds;             ///< The sdhcal threshold values
+    bool              m_useDigi;            ///< Boolean to choose if you use digi collections or not
+    bool              m_thetaBefore;            ///< Boolean to specify if the theta correction has been called before the phi correction
   };
 
   //------------------------------------------------------------------------------------------------------------------------------------------
