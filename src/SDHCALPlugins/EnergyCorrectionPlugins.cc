@@ -383,6 +383,8 @@ namespace sdhcal_content
 
     float initialHadronic = 0;
 
+    float emEnergy = 0;
+
     if(pCluster->GetNCaloHits() == 0)
       return pandora::STATUS_CODE_SUCCESS;
 
@@ -398,6 +400,11 @@ namespace sdhcal_content
         endIter != iter ; ++iter)
     {
       const pandora::CaloHit *const pCaloHit(*iter);
+
+      if(pCaloHit->GetHitType() == pandora::ECAL) //Only focus on SDHCAL corrections
+      {
+        emEnergy += pCaloHit->GetElectromagneticEnergy();
+      }
 
       if(pCaloHit->GetHitType() == pandora::HCAL)
         {
@@ -496,9 +503,11 @@ namespace sdhcal_content
 
     //const float hadEnergy(NHadronicHit1*0.0367023 + NHadronicHit2*0.0745279 + NHadronicHit3*0.363042); //Initial parameters
     //float hadEnergy(1.77366 + 0.33832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000868032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde
-float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000858032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, test 3
+    float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000858032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, test 3
 
-    correctedEnergy += hadEnergy; //Compute the corrected energy
+    //correctedEnergy += hadEnergy; //Compute the corrected energy
+
+    correctedEnergy = emEnergy + hadEnergy;
 
     return pandora::STATUS_CODE_SUCCESS;
   }
@@ -937,9 +946,15 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
 
     float initialHadronic = 0;
 
+    float lumiHCALEnergy = 0;
+
+    float emEnergy = 0;
+
+    //std::cout << "CORRECTED INIT : " << correctedEnergy << std::endl;
+
     if(pCluster->GetNCaloHits() == 0)
       return pandora::STATUS_CODE_SUCCESS;
-
+    
     if(correctedEnergy < m_lowEnergyCut)
       return pandora::STATUS_CODE_SUCCESS;
 
@@ -952,68 +967,87 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
         endIter != iter ; ++iter)
     {
       const pandora::CaloHit *const pCaloHit(*iter);
-        
-      if(pCaloHit->GetHitType() == pandora::HCAL) //Only focus on SDHCAL corrections
+
+      if(pCaloHit->GetHitType() == pandora::ECAL) //Only focus on SDHCAL corrections
+      {
+        emEnergy += pCaloHit->GetElectromagneticEnergy();
+        noShowerHit = false;
+      }
+
+      else if(pCaloHit->GetHitType() == pandora::HCAL) //Only focus on SDHCAL corrections
+      {
+        if(pCaloHit->GetHitRegion() == pandora::BARREL)
         {
-          if(pCaloHit->GetHitRegion() == pandora::BARREL)
+          //std::cout << pCaloHit->GetCellNormalVector() << std::endl;
+          if(fabs(m_sdhcalThresholds.at(0) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
           {
-            if(fabs(m_sdhcalThresholds.at(0) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
-            {
-              initialHadronic+=pCaloHit->GetHadronicEnergy();
-              if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
-                firstNHadronicHit1++;
-              else
-                secondNHadronicHit1++;
-            }
-            else if(fabs(m_sdhcalThresholds.at(1) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
-            {
-              initialHadronic+=pCaloHit->GetHadronicEnergy();
-              if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
-                firstNHadronicHit2++;
-              else
-                secondNHadronicHit2++;
-            }
-            else if(fabs(m_sdhcalThresholds.at(2) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
-            {
-              initialHadronic+=pCaloHit->GetHadronicEnergy();
-              if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
-                firstNHadronicHit3++;
-              else
-                secondNHadronicHit3++;
-            }
+            initialHadronic+=pCaloHit->GetHadronicEnergy();
+            if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
+              firstNHadronicHit1++;
+            else
+              secondNHadronicHit1++;
           }
-          else if(pCaloHit->GetHitRegion() == pandora::ENDCAP)
+          else if(fabs(m_sdhcalThresholds.at(1) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
           {
-            if(fabs(m_sdhcalThresholds.at(0) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
-            { 
-              endcapNHadronicHit1++;
-              initialHadronic+=pCaloHit->GetHadronicEnergy();
-            }
-            else if(fabs(m_sdhcalThresholds.at(1) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
-            {
-              endcapNHadronicHit2++;
-              initialHadronic+=pCaloHit->GetHadronicEnergy();
-            }
-            else if(fabs(m_sdhcalThresholds.at(2) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
-            {
-              endcapNHadronicHit3++;
-              initialHadronic+=pCaloHit->GetHadronicEnergy();
-            }
+            initialHadronic+=pCaloHit->GetHadronicEnergy();
+            if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
+              firstNHadronicHit2++;
+            else
+              secondNHadronicHit2++;
           }
-          noShowerHit = false;
+          else if(fabs(m_sdhcalThresholds.at(2) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
+          {
+            initialHadronic+=pCaloHit->GetHadronicEnergy();
+            if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
+              firstNHadronicHit3++;
+            else
+              secondNHadronicHit3++;
+          }
         }
+        else if(pCaloHit->GetHitRegion() == pandora::ENDCAP)
+        {
+          if(fabs(m_sdhcalThresholds.at(0) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
+          { 
+            endcapNHadronicHit1++;
+            initialHadronic+=pCaloHit->GetHadronicEnergy();
+          }
+          else if(fabs(m_sdhcalThresholds.at(1) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
+          {
+            endcapNHadronicHit2++;
+            initialHadronic+=pCaloHit->GetHadronicEnergy();
+          }
+          else if(fabs(m_sdhcalThresholds.at(2) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
+          {
+            endcapNHadronicHit3++;
+            initialHadronic+=pCaloHit->GetHadronicEnergy();
+          }
+          else
+          {
+            lumiHCALEnergy+=pCaloHit->GetHadronicEnergy();
+          }
+        }
+        noShowerHit = false;
+      }
     }
 
     if(noShowerHit)
       return pandora::STATUS_CODE_SUCCESS;
 
-    correctedEnergy-=initialHadronic; // Pull the initial energy of the HCAL hits from the total energy to correct
+    //correctedEnergy-=initialHadronic; // Pull the initial energy of the HCAL hits from the total energy to correct
 
     //std::cout << "WITHOUT INITIAL : " << correctedEnergy << std::endl;
 
     barrelNHadronicHit1 = firstNHadronicHit1 + secondNHadronicHit1; //Sum the hits in the barrel
     barrelNHadronicHit2 = firstNHadronicHit2 + secondNHadronicHit2;
     barrelNHadronicHit3 = firstNHadronicHit3 + secondNHadronicHit3;
+
+    /* std::cout << "N1 premier stave : " << firstNHadronicHit1 << std::endl;
+    std::cout << "N2 premier stave : " << firstNHadronicHit2 << std::endl;
+    std::cout << "N3 premier stave : " << firstNHadronicHit3 << std::endl;
+
+    std::cout << "N1 deuxieme stave : " << secondNHadronicHit1 << std::endl;
+    std::cout << "N2 deuxieme stave : " << secondNHadronicHit2 << std::endl;
+    std::cout << "N3 deuxieme stave : " << secondNHadronicHit3 << std::endl; */
 
     initialNHit1 = barrelNHadronicHit1 + endcapNHadronicHit1; //Compute the initial number of hits in sdhcal
     initialNHit2 = barrelNHadronicHit2 + endcapNHadronicHit2;
@@ -1028,11 +1062,16 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
     std::cout << "endcapNHadronicHit2 : " << endcapNHadronicHit2 << std::endl;
     std::cout << "endcapNHadronicHit3 : " << endcapNHadronicHit3 << std::endl; */
 
-    //Parameters for geometric phi correction
+    //TO UNCOMMENT WHEN NOT USING THE FIXDIRECTION DISPLACED TESLA
+
+     //Parameters for geometric phi correction
     const float clusterCosPhi(this->GetCosPhi(pCluster)); //Cos phi for the fisrt calo block
+
+    //std::cout << "Phi : " << std::acos(clusterCosPhi) * (180 /M_PI) << std::endl;
 
     //Angle for the second calo block
     const float PhiPrime(M_PI_4 - std::acos(this->GetCosPhi(pCluster))); //PhiPrime angle with respect to the second calo block
+    //std::cout << "Phi Prime : " << PhiPrime * (180 /M_PI)<< std::endl;
 
     //CosPhiPrime
     const float clusterCosPhiPrime(fabs(std::cos(PhiPrime))); //Cos phi for the fisrt calo block
@@ -1040,12 +1079,23 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
     //Parameters for geometric theta correction
     const float clusterCosTheta(this->GetCosTheta(pCluster)); //Cos theta for the endcap correction
     const float thetaAngle(std::acos(clusterCosTheta)); //Theta angle
-    const float clusterSinTheta(std::sin(thetaAngle)); //Sin thecosOrSinAngla for the barrel correction
+    const float clusterSinTheta(std::sin(thetaAngle)); //Sin thecosOrSinAngla for the barrel correction 
 
     //Sum the corrected number of hits for each tresholds
     NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(barrelNHadronicHit1, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit1, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
     NHadronicHit2 = initialNHit2 + this->GetCorrectedHitNumber(barrelNHadronicHit2, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit2, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit2, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit2, clusterCosPhiPrime);
     NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(barrelNHadronicHit3, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit3, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
+ 
+    /* NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
+    NHadronicHit2 = initialNHit2 + this->GetCorrectedHitNumber(firstNHadronicHit2, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit2, clusterCosPhiPrime);
+    NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
+ */
+
+    //For fixdirection displaced Tesla 
+    /* NHadronicHit1 = initialNHit1;
+    NHadronicHit2 = initialNHit2;
+    NHadronicHit3 = initialNHit3; */
+
 
     //Calculate the corrected total number of hits
     NHadronicHit = NHadronicHit1 + NHadronicHit2 + NHadronicHit3;
@@ -1054,7 +1104,7 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
 
     pandora::FloatVector m_energyConstantParameters;
 
-    /* m_energyConstantParameters.push_back(0.0385315) //Initial in the program;
+    /* m_energyConstantParameters.push_back(0.0385315); //Initial in the program
     m_energyConstantParameters.push_back(4.22584e-05);
     m_energyConstantParameters.push_back(-7.54657e-09);
     m_energyConstantParameters.push_back(0.0784297);
@@ -1063,6 +1113,77 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
     m_energyConstantParameters.push_back(0.127212);
     m_energyConstantParameters.push_back(4.56414e-05);
     m_energyConstantParameters.push_back(1.41142e-08); */
+
+   /*  m_energyConstantParameters.push_back(0.0627833); //Test avec grosse parabole sur le gamma, nomme Quad_test_1, MARCHE BIEN
+    m_energyConstantParameters.push_back(-0.000110457);
+    m_energyConstantParameters.push_back(6.97355e-08);
+    m_energyConstantParameters.push_back(0.067663);
+    m_energyConstantParameters.push_back(8.42064e-05);
+    m_energyConstantParameters.push_back(-5.44862e-08);
+    m_energyConstantParameters.push_back(-0.014136);
+    m_energyConstantParameters.push_back(0.00116875);
+    m_energyConstantParameters.push_back(-7.38563e-07);  */
+
+    /* m_energyConstantParameters.push_back(0.0698009); //Test avec juste Ntot=0 et gamma1 positif, nomme Quad_test_2, MARCHE BIEN AUSSI
+    m_energyConstantParameters.push_back(-9.58617e-05);
+    m_energyConstantParameters.push_back(5.24263e-08);
+    m_energyConstantParameters.push_back(0.0352866);
+    m_energyConstantParameters.push_back(0.000139652);
+    m_energyConstantParameters.push_back(-7.83021e-08);
+    m_energyConstantParameters.push_back(2.68496e-15);
+    m_energyConstantParameters.push_back(0.000885865);
+    m_energyConstantParameters.push_back(-5.023e-07); */
+
+    /* if(pCluster->GetNCaloHits() > 400) //Premier test de split avec la formule Quad test 2 et l'autre formule
+    {
+      m_energyConstantParameters.push_back(0.0698009); //Meme parametres que pour le Quad_test_2, mais avec le terme linéaire d'alpha boosté, Quad_test_3, Tres bon en linearite mais moins en résolution, J'AI GARDE LUI POUR LES PLOTS
+      m_energyConstantParameters.push_back(-9.08617e-05);
+      m_energyConstantParameters.push_back(5.24263e-08);
+      m_energyConstantParameters.push_back(0.0352866);
+      m_energyConstantParameters.push_back(0.000139652);
+      m_energyConstantParameters.push_back(-7.83021e-08);
+      m_energyConstantParameters.push_back(2.68496e-15);
+      m_energyConstantParameters.push_back(0.000885865);
+      m_energyConstantParameters.push_back(-5.023e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0772817); //Parametres pour Ntot < 400
+      m_energyConstantParameters.push_back(-0.000201997);
+      m_energyConstantParameters.push_back(2.75701e-07);
+      m_energyConstantParameters.push_back(0.0717378);
+      m_energyConstantParameters.push_back(8.39357e-05);
+      m_energyConstantParameters.push_back(-1.30498e-07);
+      m_energyConstantParameters.push_back(9.50033e-11);
+      m_energyConstantParameters.push_back(0.000751526);
+      m_energyConstantParameters.push_back(-1.67637e-07);
+    } */
+
+    if(pCluster->GetNCaloHits() > 400) //Deuxieme test de split propre avec ajustement sur chaque range de la quadratique classique 
+    {
+      m_energyConstantParameters.push_back(0.0859395);
+      m_energyConstantParameters.push_back(-0.000132893);
+      m_energyConstantParameters.push_back(7.18543e-08);
+      m_energyConstantParameters.push_back(-0.0275535);
+      m_energyConstantParameters.push_back(0.000290422);
+      m_energyConstantParameters.push_back(-1.60087e-07);
+      m_energyConstantParameters.push_back(2.64258e-11);
+      m_energyConstantParameters.push_back(0.000863202);
+      m_energyConstantParameters.push_back(-4.81296e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.077717);
+      m_energyConstantParameters.push_back(-0.000265804);
+      m_energyConstantParameters.push_back(3.72629e-07);
+      m_energyConstantParameters.push_back(0.0531516);
+      m_energyConstantParameters.push_back(0.000280523);
+      m_energyConstantParameters.push_back(-4.16125e-07);
+      m_energyConstantParameters.push_back(9.16431e-11);
+      m_energyConstantParameters.push_back(0.00140285);
+      m_energyConstantParameters.push_back(-1.53288e-06);
+    }
+
 
     /* m_energyConstantParameters.push_back(0.123637) //Parameters from calibration with correction taken in consideration;
     m_energyConstantParameters.push_back(-0.000238066);
@@ -1182,10 +1303,12 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
     m_energyConstantParameters.push_back(0.008447299643);  // Gamma2 */
 
     // Quadratic correction
-    /* const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit);
+    const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit);
     const float beta(m_energyConstantParameters.at(3) + m_energyConstantParameters.at(4)*NHadronicHit + m_energyConstantParameters.at(5)*NHadronicHit*NHadronicHit);
     const float gamma(m_energyConstantParameters.at(6) + m_energyConstantParameters.at(7)*NHadronicHit + m_energyConstantParameters.at(8)*NHadronicHit*NHadronicHit);
-    const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma); */
+    const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma);
+
+
 
     //Linear correction
    /*  const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit);
@@ -1209,7 +1332,10 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
       //float hadEnergy(1.46699 + 0.374448*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000963967*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde sans correction     
       //float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000828032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, test 2
 
-      float hadEnergy(1.67366 + 0.327533*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.0008202397*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, test 3 good
+      //float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000848032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, TEST A FAIRE
+
+
+      //float hadEnergy(1.67366 + 0.327533*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.0008202397*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, test 3 good
 
       //float hadEnergy(1.77366 + 0.33832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000868032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.0250775*(NHadronicHit2-0.273174*NHadronicHit1) - 0.169744*(NHadronicHit3 - 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, termes supplementaires chi2
 
@@ -1217,7 +1343,71 @@ float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.27
       
       //float hadEnergy(2.00455 + 0.330887*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000838992*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, condition sur Nhit > 20    
 
-      correctedEnergy += hadEnergy; //Compute the corrected energy
+      //correctedEnergy += hadEnergy; //Compute the corrected energy
+
+      //float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000868032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde     
+
+      //float hadEnergy(1.77366 + 0.32832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.0008202397*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) - 0.0094602*(NHadronicHit2-0.273174*NHadronicHit1) - 0.2378*(NHadronicHit3 - 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, termes supplementaires chi2 sans contrainte sur angle
+
+      //float hadEnergy(1.67366 + 0.33832*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000848032*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde, test 4
+
+      //const float hadEnergy(1.02792 + 0.3901376*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.000676844*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement, test 5
+      
+      //const float hadEnergy(0.421656*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.00063991*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement sans terme constant
+
+//const float hadEnergy(0.626581 + 0.37609*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.00049874*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 6, fonctionne
+
+//const float hadEnergy(0.7 + 0.37609*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.00049874*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 7, fonctionne tres bien, le meilleur lot avec cette methode pour le moment
+
+//const float hadEnergy(0.957621 + 0.419409*(NHadronicHit3 + 0.185099 *(NHadronicHit1*0.277335 + NHadronicHit2)) + 0.000774264*(NHadronicHit3 + 0.185099 *(NHadronicHit1*0.277335 + NHadronicHit2))*(NHadronicHit3 + 0.185099 *(NHadronicHit1*0.277335 + NHadronicHit2))); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde, test1, not good
+      
+//const float hadEnergy(2.99859 + 0.583219*(NHadronicHit3 + 0.000163878*(NHadronicHit2 + NHadronicHit1*NHadronicHit1*1.79221*1e-05 + NHadronicHit1*0.257491 - 1.23117)*(NHadronicHit2 + NHadronicHit1*NHadronicHit1*1.79221*1e-05 + NHadronicHit1*0.257491 - 1.23117) + 0.0856896*(NHadronicHit2 + NHadronicHit1*NHadronicHit1*1.79221*1e-05 + NHadronicHit1*0.257491 - 1.23117) - 2.6244) ); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde en linéaire mais les termes internes en quadratique, test1, not good
+
+//const float hadEnergy(1.23471 + 0.402872*(NHadronicHit3 + 0.181227 *(NHadronicHit1*0.274229 + NHadronicHit2)) + 0.000510828*(NHadronicHit3 + 0.181227 *(NHadronicHit1*0.274229 + NHadronicHit2))*(NHadronicHit3 + 0.181227 *(NHadronicHit1*0.274229 + NHadronicHit2))); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde + Calibration Phi stave v1
+
+//const float hadEnergy(1.22901 + 0.393363*(NHadronicHit3 + 0.188526 *(NHadronicHit1*0.274229 + NHadronicHit2) - 1.93553e-05*( NHadronicHit1*0.274229 + NHadronicHit2 )*( NHadronicHit1*0.274229 + NHadronicHit2 )) + 0.000584061*(NHadronicHit3 + 0.188526 *(NHadronicHit1*0.274229 + NHadronicHit2) - 1.93553e-05*( NHadronicHit1*0.274229 + NHadronicHit2 )*( NHadronicHit1*0.274229 + NHadronicHit2 ))*(NHadronicHit3 + 0.188526 *(NHadronicHit1*0.274229 + NHadronicHit2) - 1.93553e-05*( NHadronicHit1*0.274229 + NHadronicHit2 )*( NHadronicHit1*0.274229 + NHadronicHit2 ))); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde + Calibration Phi stave + fit quadratique N3
+
+//const float hadEnergy(1.23471 + 0.39920845*(NHadronicHit3 + 0.181227 *(NHadronicHit1*0.274229 + NHadronicHit2)) + 0.00049228*(NHadronicHit3 + 0.181227 *(NHadronicHit1*0.274229 + NHadronicHit2))*(NHadronicHit3 + 0.181227 *(NHadronicHit1*0.274229 + NHadronicHit2))); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde + Calibration Phi stave + baissées à la main
+
+
+//const float hadEnergy(3.5612 + 0.543915*( NHadronicHit3 + 0.000116323*(NHadronicHit2 + NHadronicHit1*NHadronicHit1*1.66646*1e-05 + NHadronicHit1*0.256779 - 1.30443)*(NHadronicHit2 + NHadronicHit1*NHadronicHit1*1.66646*1e-05 + NHadronicHit1*0.256779 - 1.30443) + 0.0855094*(NHadronicHit2 + NHadronicHit1*NHadronicHit1*1.66646*1e-05 + NHadronicHit1*0.256779 - 1.30443) - 2.67001 ) ); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde en linéaire mais les termes internes en quadratique, test2, not good at all
+     
+//const float hadEnergy(8.95525e-05*(NHadronicHit3 +  2.93836e-05*NHadronicHit1*NHadronicHit1 + 0.066136*NHadronicHit1 - 1.77325 + 0.00032858*NHadronicHit2*NHadronicHit2 + 0.262724*NHadronicHit2 - 1.51835)*(NHadronicHit3 +  2.93836e-05*NHadronicHit1*NHadronicHit1 + 0.066136*NHadronicHit1 - 1.77325 + 0.00032858*NHadronicHit2*NHadronicHit2 + 0.262724*NHadronicHit2 - 1.51835) + 0.327704*(NHadronicHit3 +  2.93836e-05*NHadronicHit1*NHadronicHit1 + 0.066136*NHadronicHit1 - 1.77325 + 0.00032858*NHadronicHit2*NHadronicHit2 + 0.262724*NHadronicHit2 - 1.51835) + 2.03222); //Nouvelle formule avec NTilde basé uniquement sur des relations avec N3
+
+//const float hadEnergy(1.2894 + 0.415109*(NHadronicHit3 + 0.171862 *(NHadronicHit1*0.272315 + NHadronicHit2)) + 0.000527906*(NHadronicHit3 + 0.171862 *(NHadronicHit1*0.272315 + NHadronicHit2))*(NHadronicHit3 + 0.171862 *(NHadronicHit1*0.272315 + NHadronicHit2))); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde + Calibration Phi stave + coeffs via analyse en composante principale
+
+//const float hadEnergy(0.3298*(4.73081e-05*NHadronicHit1*NHadronicHit1 + 0.0668336*NHadronicHit1 +  0.000492912*NHadronicHit2*NHadronicHit2 + 0.264927*NHadronicHit2 + 0.000764138*NHadronicHit3*NHadronicHit3 + 0.839078*NHadronicHit3 + 3.00868)); //Test de la combinaison des trois formules (N1, N2, N3) multipliées par un tier
+
+//const float hadEnergy(0.661408*(NHadronicHit3 + 0.115332*(NHadronicHit1*0.289489 + NHadronicHit2)) + 0.738055); //Ntilde lineaire, FTFP_BERT, displaced Tesla
+
+//NTILDE A PARTIR DES EVENTS UDS POUR COEFF ET NTILDE
+//const float hadEnergy(4.11697 + 0.865048*(NHadronicHit3 + 0.113813 *(NHadronicHit1*0.247633 + NHadronicHit2)) - 0.000501047*(NHadronicHit3 + 0.113813 *(NHadronicHit1*0.247633 + NHadronicHit2))*(NHadronicHit3 + 0.113813 *(NHadronicHit1*0.247633 + NHadronicHit2))); 
+
+//Based on machine learning with sklearn, quadratic
+//const float hadEnergy(0.044191*NHadronicHit1 + 0.071432*NHadronicHit2 + 0.300506*NHadronicHit3 -0.000003*NHadronicHit1*NHadronicHit1 + 0.000086*NHadronicHit1*NHadronicHit2 -0.000552*NHadronicHit1*NHadronicHit3 -0.000089*NHadronicHit2*NHadronicHit2 -0.000007*NHadronicHit2*NHadronicHit3 + 0.003557*NHadronicHit3*NHadronicHit3);
+
+//Based on ML with sklearn, degree 3
+//const float hadEnergy(0.067555*NHadronicHit1 + 0.055146*NHadronicHit2 -0.073022*NHadronicHit3 + 0.000002*NHadronicHit1*NHadronicHit1 -0.000140*NHadronicHit1*NHadronicHit2 + -0.001114*NHadronicHit1*NHadronicHit3 + 0.000348*NHadronicHit2*NHadronicHit2 + 0.001752*NHadronicHit2*NHadronicHit3 + 0.012622*NHadronicHit3*NHadronicHit3 + 0.000002*NHadronicHit1*NHadronicHit2*NHadronicHit3 -0.000002*NHadronicHit1*NHadronicHit3*NHadronicHit3 -0.000006*NHadronicHit2*NHadronicHit2*NHadronicHit3 -0.000012*NHadronicHit2*NHadronicHit3*NHadronicHit3 -0.000035*NHadronicHit3*NHadronicHit3*NHadronicHit3);
+      
+//NTILDE avec coeff entre hits pris sur les uds. Pas mal   
+//const float hadEnergy(0.7 + 0.37609*(NHadronicHit3 + 0.115178 *(NHadronicHit1*0.248168  + NHadronicHit2)) + 0.00049874*(NHadronicHit3 + 0.115178 *(NHadronicHit1*0.248168  + NHadronicHit2))*(NHadronicHit3 + 0.115178 *(NHadronicHit1*0.248168  + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 7, fonctionne tres bien, le meilleur lot avec cette methode pour le moment
+
+//NTilde avec tous les coeffs determines par minimisation chi2
+//const float hadEnergy(1.33453 + 0.322512*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2)) + 4.53379e-05*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2))*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 7, fonctionne tres bien, le meilleur lot avec cette methode pour le moment
+
+
+correctedEnergy = lumiHCALEnergy + emEnergy + hadEnergy;
+
+/* Minimizer is Linear / Migrad
+Chi2                  	=  	11.9267
+NDf                   	=       	83
+p0                    	=  	1.23471   +/-   0.155893    
+p1                    	= 	0.402872   +/-   0.00366355  
+p2                    	=  0.000510828   +/-   1.8548e-05  */
+
+
+
+      //std::cout << "CORRECTED FINAL : " << correctedEnergy << std::endl;
   //}
 
 /* double coeffN1 = -0.229213;
@@ -1265,6 +1455,8 @@ double coeffNhit_sq = 0.000088;
   {
     pandora::CartesianVector centroid(0.f, 0.f, 0.f);
     PANDORA_THROW_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, ClusterHelper::GetCentroid(pCluster, centroid));
+
+    //std::cout << "CENTROID : " << centroid << std::endl;
 
     return fabs(centroid.GetCosOpeningAngle(pandora::CartesianVector(0.f, 0.f, 1.f)));
   }
