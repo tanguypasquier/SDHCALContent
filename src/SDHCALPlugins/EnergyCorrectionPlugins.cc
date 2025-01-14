@@ -1134,7 +1134,7 @@ namespace sdhcal_content
     m_energyConstantParameters.push_back(0.000885865);
     m_energyConstantParameters.push_back(-5.023e-07); */
 
-    /* if(pCluster->GetNCaloHits() > 400) //Premier test de split avec la formule Quad test 2 et l'autre formule
+    /* if(pCluster->GetNCaloHits() > 400) //Deuxieme test de split avec la formule Quad test 2 et l'autre formule : TRES BON !
     {
       m_energyConstantParameters.push_back(0.0698009); //Meme parametres que pour le Quad_test_2, mais avec le terme linéaire d'alpha boosté, Quad_test_3, Tres bon en linearite mais moins en résolution, J'AI GARDE LUI POUR LES PLOTS
       m_energyConstantParameters.push_back(-9.08617e-05);
@@ -1159,7 +1159,7 @@ namespace sdhcal_content
       m_energyConstantParameters.push_back(-1.67637e-07);
     } */
 
-    if(pCluster->GetNCaloHits() > 400) //Deuxieme test de split propre avec ajustement sur chaque range de la quadratique classique 
+   /*  if(pCluster->GetNCaloHits() > 400) //Troisieme test de split propre avec ajustement sur chaque range de la quadratique classique -> Donne trop peu de fichier (valeurs négatives ?)
     {
       m_energyConstantParameters.push_back(0.0859395);
       m_energyConstantParameters.push_back(-0.000132893);
@@ -1182,8 +1182,157 @@ namespace sdhcal_content
       m_energyConstantParameters.push_back(9.16431e-11);
       m_energyConstantParameters.push_back(0.00140285);
       m_energyConstantParameters.push_back(-1.53288e-06);
-    }
+    } */
 
+    /* if(pCluster->GetNCaloHits() > 400) //Quatrieme test de split propre avec ajustement sur chaque range de la quadratique classique
+    {
+      m_energyConstantParameters.push_back(0.0790412);
+      m_energyConstantParameters.push_back(-0.0001142);
+      m_energyConstantParameters.push_back(6.08164e-08);
+      m_energyConstantParameters.push_back(9.98997e-11);
+      m_energyConstantParameters.push_back(0.000216286);
+      m_energyConstantParameters.push_back(-1.16695e-07);
+      m_energyConstantParameters.push_back(9.88261e-11);
+      m_energyConstantParameters.push_back(0.000864327);
+      m_energyConstantParameters.push_back(-4.8178e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.077717);
+      m_energyConstantParameters.push_back(-0.000265804);
+      m_energyConstantParameters.push_back(3.72629e-07);
+      m_energyConstantParameters.push_back(0.0531516);
+      m_energyConstantParameters.push_back(0.000280523);
+      m_energyConstantParameters.push_back(-4.16125e-07);
+      m_energyConstantParameters.push_back(9.16431e-11);
+      m_energyConstantParameters.push_back(0.00140285);
+      m_energyConstantParameters.push_back(-1.53288e-06);
+    } */
+
+    /* if(pCluster->GetNCaloHits() > 600) //Cinquieme test de split propre avec ajustement sur chaque range de la quadratique classique et seuil a 600
+    {
+      m_energyConstantParameters.push_back(0.0830988);
+      m_energyConstantParameters.push_back(-0.000122872);
+      m_energyConstantParameters.push_back(6.53792e-08);
+      m_energyConstantParameters.push_back(9.98381e-11);
+      m_energyConstantParameters.push_back(0.000211478);
+      m_energyConstantParameters.push_back(-1.11879e-07);
+      m_energyConstantParameters.push_back(9.86698e-11);
+      m_energyConstantParameters.push_back(0.000914441);
+      m_energyConstantParameters.push_back(-5.29149e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0644737);
+      m_energyConstantParameters.push_back(-0.000105861);
+      m_energyConstantParameters.push_back(7.19378e-08);
+      m_energyConstantParameters.push_back(0.0720974);
+      m_energyConstantParameters.push_back(8.3249e-05);
+      m_energyConstantParameters.push_back(-8.67671e-08);
+      m_energyConstantParameters.push_back(0.0106789);
+      m_energyConstantParameters.push_back(0.000895708);
+      m_energyConstantParameters.push_back(-5.02596e-07);
+    } */
+
+    /* if(pCluster->GetNCaloHits() > 500) //Test de split propre avec ajustement sur chaque range de la quadratique classique + chevauchement et seuil a 500
+    {
+      m_energyConstantParameters.push_back(0.0790412);  //Parametres fit sur Ntot > 400
+      m_energyConstantParameters.push_back(-0.0001142);
+      m_energyConstantParameters.push_back(6.08164e-08);
+      m_energyConstantParameters.push_back(9.98997e-11);
+      m_energyConstantParameters.push_back(0.000216286);
+      m_energyConstantParameters.push_back(-1.16695e-07);
+      m_energyConstantParameters.push_back(9.88261e-11);
+      m_energyConstantParameters.push_back(0.000864327);
+      m_energyConstantParameters.push_back(-4.8178e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0644737); //Parametres fit sur Ntot < 600
+      m_energyConstantParameters.push_back(-0.000105861);
+      m_energyConstantParameters.push_back(7.19378e-08);
+      m_energyConstantParameters.push_back(0.0720974);
+      m_energyConstantParameters.push_back(8.3249e-05);
+      m_energyConstantParameters.push_back(-8.67671e-08);
+      m_energyConstantParameters.push_back(0.0106789);
+      m_energyConstantParameters.push_back(0.000895708);
+      m_energyConstantParameters.push_back(-5.02596e-07);
+    } */
+
+    /* if(pCluster->GetNCaloHits() > 300) //Test de split propre avec ajustement sur range basse de la quadratique classique et quad classique sur hautes energies + chevauchement et seuil a 500
+    {
+      m_energyConstantParameters.push_back(0.0698009); //Meme parametres que pour le Quad_test_2, mais avec le terme linéaire d'alpha boosté, Quad_test_3, Tres bon en linearite mais moins en résolution, J'AI GARDE LUI POUR LES PLOTS
+      m_energyConstantParameters.push_back(-9.08617e-05);
+      m_energyConstantParameters.push_back(5.24263e-08);
+      m_energyConstantParameters.push_back(0.0352866);
+      m_energyConstantParameters.push_back(0.000139652);
+      m_energyConstantParameters.push_back(-7.83021e-08);
+      m_energyConstantParameters.push_back(2.68496e-15);
+      m_energyConstantParameters.push_back(0.000885865);
+      m_energyConstantParameters.push_back(-5.023e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0644737); //Parametres fit sur Ntot < 600
+      m_energyConstantParameters.push_back(-0.000105861);
+      m_energyConstantParameters.push_back(7.19378e-08);
+      m_energyConstantParameters.push_back(0.0720974);
+      m_energyConstantParameters.push_back(8.3249e-05);
+      m_energyConstantParameters.push_back(-8.67671e-08);
+      m_energyConstantParameters.push_back(0.0106789);
+      m_energyConstantParameters.push_back(0.000895708);
+      m_energyConstantParameters.push_back(-5.02596e-07);
+    } */
+
+    /* if(NHadronicHit < 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 400 -> TRES BON
+    {
+      m_energyConstantParameters.push_back(0.0772817); //Fit pour Nhcal < 400 
+      m_energyConstantParameters.push_back(-0.000201997);
+      m_energyConstantParameters.push_back(2.75701e-07);
+      m_energyConstantParameters.push_back(0.0717378);
+      m_energyConstantParameters.push_back(8.39357e-05);
+      m_energyConstantParameters.push_back(-1.30498e-07);
+      m_energyConstantParameters.push_back(9.50033e-11);
+      m_energyConstantParameters.push_back(0.000751526);
+      m_energyConstantParameters.push_back(-1.67637e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0736482); //Fit pour Nhcal > 400
+      m_energyConstantParameters.push_back(-9.90976e-05);
+      m_energyConstantParameters.push_back(5.20349e-08);
+      m_energyConstantParameters.push_back(9.9994e-11);
+      m_energyConstantParameters.push_back(0.000196941);
+      m_energyConstantParameters.push_back(-9.85922e-08);
+      m_energyConstantParameters.push_back(9.95273e-11);
+      m_energyConstantParameters.push_back(0.000891664);
+      m_energyConstantParameters.push_back(-5.10375e-07);
+    } */
+
+    if(NHadronicHit <= 200) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 200 
+    {
+      m_energyConstantParameters.push_back(0.0945208); //Fit pour Nhcal <= 200
+      m_energyConstantParameters.push_back(-0.000555553);
+      m_energyConstantParameters.push_back(1.72828e-06);
+      m_energyConstantParameters.push_back(0.122122);
+      m_energyConstantParameters.push_back(-0.000546102);
+      m_energyConstantParameters.push_back(1.69719e-06);
+      m_energyConstantParameters.push_back(0.168558);
+      m_energyConstantParameters.push_back(-0.00104433);
+      m_energyConstantParameters.push_back(3.94122e-06);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.069034); //Fit pour Nhcal > 200
+      m_energyConstantParameters.push_back(-9.13475e-05);
+      m_energyConstantParameters.push_back(4.89263e-08);
+      m_energyConstantParameters.push_back(0.0300912);
+      m_energyConstantParameters.push_back(0.000143239);
+      m_energyConstantParameters.push_back(-7.64067e-08);
+      m_energyConstantParameters.push_back(9.86059e-11);
+      m_energyConstantParameters.push_back(0.000882258);
+      m_energyConstantParameters.push_back(-4.99842e-07);
+    }
 
     /* m_energyConstantParameters.push_back(0.123637) //Parameters from calibration with correction taken in consideration;
     m_energyConstantParameters.push_back(-0.000238066);
@@ -1395,6 +1544,18 @@ namespace sdhcal_content
 //NTilde avec tous les coeffs determines par minimisation chi2
 //const float hadEnergy(1.33453 + 0.322512*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2)) + 4.53379e-05*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2))*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 7, fonctionne tres bien, le meilleur lot avec cette methode pour le moment
 
+
+//ML degré 3 en split pour Ntot = 400
+/* float hadEnergy;
+
+if(pCluster->GetNCaloHits() < 400) 
+{
+  hadEnergy = 0.055274*NHadronicHit1 + 0.112028*NHadronicHit2 + 0.490528*NHadronicHit3 + 0.000120*NHadronicHit1*NHadronicHit1 - 0.002118*NHadronicHit1*NHadronicHit2 - 0.002405*NHadronicHit1*NHadronicHit3 + 0.004133*NHadronicHit2*NHadronicHit2 - 0.004745*NHadronicHit2*NHadronicHit3 + 0.014478*NHadronicHit3*NHadronicHit3 - 0.000001*NHadronicHit1*NHadronicHit1*NHadronicHit1 + 0.000013*NHadronicHit1*NHadronicHit1*NHadronicHit2 + 0.000002*NHadronicHit1*NHadronicHit1*NHadronicHit3 - 0.000034*NHadronicHit1*NHadronicHit2*NHadronicHit2 + 0.000001*NHadronicHit1*NHadronicHit2*NHadronicHit3 - 0.000008*NHadronicHit1*NHadronicHit3*NHadronicHit3 + 0.000022*NHadronicHit2*NHadronicHit2*NHadronicHit2 + 0.000043*NHadronicHit2*NHadronicHit2*NHadronicHit3 - 0.000024*NHadronicHit2*NHadronicHit3*NHadronicHit3 - 0.000026*NHadronicHit3*NHadronicHit3*NHadronicHit3;
+}
+else
+{
+  hadEnergy = 0.076798*NHadronicHit1 + 0.038953*NHadronicHit2 - 0.190943*NHadronicHit3 - 0.000039*NHadronicHit1*NHadronicHit1 + 0.000024*NHadronicHit1*NHadronicHit2 - 0.000830*NHadronicHit1*NHadronicHit3 + 0.000131*NHadronicHit2*NHadronicHit2 + 0.001773*NHadronicHit2*NHadronicHit3 + 0.012946*NHadronicHit3*NHadronicHit3 + 0.000002*NHadronicHit1*NHadronicHit2*NHadronicHit3 - 0.000003*NHadronicHit1*NHadronicHit3*NHadronicHit3 - 0.000004*NHadronicHit2*NHadronicHit2*NHadronicHit3 - 0.000013*NHadronicHit2*NHadronicHit3*NHadronicHit3 - 0.000033*NHadronicHit3*NHadronicHit3*NHadronicHit3;
+} */
 
 correctedEnergy = lumiHCALEnergy + emEnergy + hadEnergy;
 
