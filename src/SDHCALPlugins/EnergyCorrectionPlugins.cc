@@ -970,7 +970,8 @@ namespace sdhcal_content
 
       if(pCaloHit->GetHitType() == pandora::ECAL) //Only focus on SDHCAL corrections
       {
-        emEnergy += pCaloHit->GetElectromagneticEnergy();
+        //emEnergy += pCaloHit->GetElectromagneticEnergy();
+        emEnergy += pCaloHit->GetHadronicEnergy(); //We are looking at hadronic clusters so we need the right correction factor for the hit energy
         noShowerHit = false;
       }
 
@@ -1074,7 +1075,7 @@ namespace sdhcal_content
     //std::cout << "Phi Prime : " << PhiPrime * (180 /M_PI)<< std::endl;
 
     //CosPhiPrime
-    const float clusterCosPhiPrime(fabs(std::cos(PhiPrime))); //Cos phi for the fisrt calo block
+    const float clusterCosPhiPrime(fabs(std::cos(PhiPrime))); //Cos phi for the second calo block
 
     //Parameters for geometric theta correction
     const float clusterCosTheta(this->GetCosTheta(pCluster)); //Cos theta for the endcap correction
@@ -1086,6 +1087,8 @@ namespace sdhcal_content
     NHadronicHit2 = initialNHit2 + this->GetCorrectedHitNumber(barrelNHadronicHit2, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit2, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit2, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit2, clusterCosPhiPrime);
     NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(barrelNHadronicHit3, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit3, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
  
+
+
     /* NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
     NHadronicHit2 = initialNHit2 + this->GetCorrectedHitNumber(firstNHadronicHit2, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit2, clusterCosPhiPrime);
     NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
@@ -1124,7 +1127,7 @@ namespace sdhcal_content
     m_energyConstantParameters.push_back(0.00116875);
     m_energyConstantParameters.push_back(-7.38563e-07);  */
 
-    /* m_energyConstantParameters.push_back(0.0698009); //Test avec juste Ntot=0 et gamma1 positif, nomme Quad_test_2, MARCHE BIEN AUSSI
+   /*  m_energyConstantParameters.push_back(0.0698009); //Test avec juste Ntot=0 et gamma1 positif, nomme Quad_test_2, MARCHE BIEN AUSSI, A UTILISER QUAND QUAD SEULE
     m_energyConstantParameters.push_back(-9.58617e-05);
     m_energyConstantParameters.push_back(5.24263e-08);
     m_energyConstantParameters.push_back(0.0352866);
@@ -1133,6 +1136,90 @@ namespace sdhcal_content
     m_energyConstantParameters.push_back(2.68496e-15);
     m_energyConstantParameters.push_back(0.000885865);
     m_energyConstantParameters.push_back(-5.023e-07); */
+
+    /* m_energyConstantParameters.push_back(0.063867); //Test de Quad_test_2 sur laquelle j'applique un facteur de 0.915 pour essayer de le corriger
+    m_energyConstantParameters.push_back(-8.77134e-05);
+    m_energyConstantParameters.push_back(4.79661e-08);
+    m_energyConstantParameters.push_back(0.0322821);
+    m_energyConstantParameters.push_back(0.000127765);
+    m_energyConstantParameters.push_back(-7.16038e-08);
+    m_energyConstantParameters.push_back(2.45613e-15);
+    m_energyConstantParameters.push_back(0.000810373);
+    m_energyConstantParameters.push_back(-4.5956e-07); */
+
+
+    /* m_energyConstantParameters.push_back(0.0335448); // Quadratique obtenue apres ajustement en prenant la Eecal corrigee v1
+    m_energyConstantParameters.push_back(-4.63315e-05);
+    m_energyConstantParameters.push_back(3.2481e-08);
+    m_energyConstantParameters.push_back(0.0935598);
+    m_energyConstantParameters.push_back(2.40283e-05);
+    m_energyConstantParameters.push_back(-1.58057e-08);
+    m_energyConstantParameters.push_back(0.102606);
+    m_energyConstantParameters.push_back(0.000868993);
+    m_energyConstantParameters.push_back(-5.43112e-07); */
+
+    /* m_energyConstantParameters.push_back(0.0317779); //Quadratique obtenue avec events HCAL uniquement v2
+    m_energyConstantParameters.push_back(-1.84114e-06);
+    m_energyConstantParameters.push_back(-6.47958e-09);
+    m_energyConstantParameters.push_back(0.0882297);
+    m_energyConstantParameters.push_back(6.11811e-06);
+    m_energyConstantParameters.push_back(9.99991e-11);
+    m_energyConstantParameters.push_back(0.317158);
+    m_energyConstantParameters.push_back(8.78555e-05);
+    m_energyConstantParameters.push_back(9.60822e-11); */
+
+    /* m_energyConstantParameters.push_back(0.0544019); //parameters calibration test v3
+    m_energyConstantParameters.push_back(-5.15379e-05);
+    m_energyConstantParameters.push_back(1.24098e-08);
+    m_energyConstantParameters.push_back(0.0761192);
+    m_energyConstantParameters.push_back(-7.80276e-05);
+    m_energyConstantParameters.push_back(1.12879e-07);
+    m_energyConstantParameters.push_back(9.97535e-11);
+    m_energyConstantParameters.push_back(0.00111155);
+    m_energyConstantParameters.push_back(-6.39485e-07); */
+
+    /* m_energyConstantParameters.push_back(0.0329485); //Calibration test v4
+    m_energyConstantParameters.push_back(-4.06195e-05);
+    m_energyConstantParameters.push_back(2.58917e-08);
+    m_energyConstantParameters.push_back(0.111964);
+    m_energyConstantParameters.push_back(-5.26966e-05);
+    m_energyConstantParameters.push_back(3.99208e-08);
+    m_energyConstantParameters.push_back(4.75164e-12);
+    m_energyConstantParameters.push_back(0.00114089);
+    m_energyConstantParameters.push_back(-6.8628e-07); */
+
+   /*  m_energyConstantParameters.push_back(0.0645514); //Calibration test v5
+    m_energyConstantParameters.push_back(-0.000119228);
+    m_energyConstantParameters.push_back(7.1818e-08);
+    m_energyConstantParameters.push_back(0.0422478);
+    m_energyConstantParameters.push_back(0.000143014);
+    m_energyConstantParameters.push_back(-9.17877e-08);
+    m_energyConstantParameters.push_back(1e-10);
+    m_energyConstantParameters.push_back(0.00112138);
+    m_energyConstantParameters.push_back(-6.43333e-07); */
+
+   /*  m_energyConstantParameters.push_back(0.0288991); //Calibration test v6
+    m_energyConstantParameters.push_back(1.04226e-06);
+    m_energyConstantParameters.push_back(-5.52529e-09);
+    m_energyConstantParameters.push_back(0.0812928);
+    m_energyConstantParameters.push_back(3.4028e-06);
+    m_energyConstantParameters.push_back(9.29039e-11);
+    m_energyConstantParameters.push_back(0.327413);
+    m_energyConstantParameters.push_back(9.85861e-05);
+    m_energyConstantParameters.push_back(9.99891e-11); */
+
+   /*  m_energyConstantParameters.push_back(0.063000);    // était 0.0645514 → -2.4% Calibration test v5bis ajuste
+    m_energyConstantParameters.push_back(-0.000117);   // inchangé (très léger)
+    m_energyConstantParameters.push_back(7.1818e-08);  // inchangé
+    m_energyConstantParameters.push_back(0.041000);    // était 0.0422478 → -2.95%
+    m_energyConstantParameters.push_back(0.000139);    // légère baisse
+    m_energyConstantParameters.push_back(-9.17877e-08); // inchangé
+    m_energyConstantParameters.push_back(1e-10);        // inchangé (négligeable)
+    m_energyConstantParameters.push_back(0.001105);     // était 0.00112138 → -1.4%
+    m_energyConstantParameters.push_back(-6.43333e-07); // inchangé */
+    
+
+
 
     /* if(pCluster->GetNCaloHits() > 400) //Deuxieme test de split avec la formule Quad test 2 et l'autre formule : TRES BON !
     {
@@ -1284,7 +1371,7 @@ namespace sdhcal_content
       m_energyConstantParameters.push_back(-5.02596e-07);
     } */
 
-    /* if(NHadronicHit < 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 400 -> TRES BON
+    /* if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 400 -> TRES BON
     {
       m_energyConstantParameters.push_back(0.0772817); //Fit pour Nhcal < 400 
       m_energyConstantParameters.push_back(-0.000201997);
@@ -1309,7 +1396,7 @@ namespace sdhcal_content
       m_energyConstantParameters.push_back(-5.10375e-07);
     } */
 
-    if(NHadronicHit <= 200) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 200 
+    /* if(NHadronicHit <= 200) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 200 
     {
       m_energyConstantParameters.push_back(0.0945208); //Fit pour Nhcal <= 200
       m_energyConstantParameters.push_back(-0.000555553);
@@ -1332,7 +1419,143 @@ namespace sdhcal_content
       m_energyConstantParameters.push_back(9.86059e-11);
       m_energyConstantParameters.push_back(0.000882258);
       m_energyConstantParameters.push_back(-4.99842e-07);
+    } */
+
+   /*  if(NHadronicHit <= 600) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 
+    {
+      m_energyConstantParameters.push_back(0.0724106); //Fit pour Nhcal <= 600
+      m_energyConstantParameters.push_back(-0.000147888);
+      m_energyConstantParameters.push_back(1.54457e-07);
+      m_energyConstantParameters.push_back(0.0480068);
+      m_energyConstantParameters.push_back(0.000244204);
+      m_energyConstantParameters.push_back(-3.56011e-07);
+      m_energyConstantParameters.push_back(9.75561e-11);
+      m_energyConstantParameters.push_back(0.000887701);
+      m_energyConstantParameters.push_back(-6.23993e-07);
     }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0743324); //Fit pour Nhcal > 600
+      m_energyConstantParameters.push_back(-0.000102995);
+      m_energyConstantParameters.push_back(5.5421e-08);
+      m_energyConstantParameters.push_back(0.0062941);
+      m_energyConstantParameters.push_back(0.000165262);
+      m_energyConstantParameters.push_back(-7.58346e-08);
+      m_energyConstantParameters.push_back(-0.0627069);
+      m_energyConstantParameters.push_back(0.0011151);
+      m_energyConstantParameters.push_back(-6.62026e-07);
+    } */
+
+ /*    if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 et chevauchement des formules : MEILLEURE COMBINAISON, Split 400 Quad APRIL Overlap
+    {
+      m_energyConstantParameters.push_back(0.0724106); //Fit pour Nhcal <= 600
+      m_energyConstantParameters.push_back(-0.000147888);
+      m_energyConstantParameters.push_back(1.54457e-07);
+      m_energyConstantParameters.push_back(0.0480068);
+      m_energyConstantParameters.push_back(0.000244204);
+      m_energyConstantParameters.push_back(-3.56011e-07);
+      m_energyConstantParameters.push_back(9.75561e-11);
+      m_energyConstantParameters.push_back(0.000887701);
+      m_energyConstantParameters.push_back(-6.23993e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0736482); //Fit pour Nhcal > 400
+      m_energyConstantParameters.push_back(-9.90976e-05);
+      m_energyConstantParameters.push_back(5.20349e-08);
+      m_energyConstantParameters.push_back(9.9994e-11);
+      m_energyConstantParameters.push_back(0.000196941);
+      m_energyConstantParameters.push_back(-9.85922e-08);
+      m_energyConstantParameters.push_back(9.95273e-11);
+      m_energyConstantParameters.push_back(0.000891664);
+      m_energyConstantParameters.push_back(-5.10375e-07);
+    } */
+
+   /*  if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 et chevauchement des formules : NOUVELLE CALIBRATION, Split 400 Quad APRIL Overlap
+    {
+      m_energyConstantParameters.push_back(0.0712495);  //Fit pour Nhcal <= 600
+      m_energyConstantParameters.push_back(-0.000186449);
+      m_energyConstantParameters.push_back(1.97156e-07);
+      m_energyConstantParameters.push_back(0.0153121);
+      m_energyConstantParameters.push_back(0.00045658);
+      m_energyConstantParameters.push_back(-6.3797e-07);
+      m_energyConstantParameters.push_back(1.28742e-12);
+      m_energyConstantParameters.push_back(0.00100913);
+      m_energyConstantParameters.push_back(-5.59527e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0350654);  // Fit pour Nhcal > 400 
+      m_energyConstantParameters.push_back(-3.84159e-05);
+      m_energyConstantParameters.push_back(2.40987e-08);
+      m_energyConstantParameters.push_back(0.137626);
+      m_energyConstantParameters.push_back(-0.00012783);
+      m_energyConstantParameters.push_back(7.27967e-08);
+      m_energyConstantParameters.push_back(1e-10);
+      m_energyConstantParameters.push_back(0.00113873);
+      m_energyConstantParameters.push_back(-6.63919e-07);
+    } */
+
+    /* if(NHadronicHit <= 350) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 350
+    {
+      m_energyConstantParameters.push_back(0.0795213); //Fit pour Nhcal <= 350
+      m_energyConstantParameters.push_back(-0.000236885);
+      m_energyConstantParameters.push_back(3.82208e-07);
+      m_energyConstantParameters.push_back(0.0779764);
+      m_energyConstantParameters.push_back(4.65527e-05);
+      m_energyConstantParameters.push_back(-1.06116e-07);
+      m_energyConstantParameters.push_back(0.0166934);
+      m_energyConstantParameters.push_back(0.000561318);
+      m_energyConstantParameters.push_back(2.48013e-07);      
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0721157); //Fit pour Nhcal > 350
+      m_energyConstantParameters.push_back(-9.77994e-05);
+      m_energyConstantParameters.push_back(5.25612e-08);
+      m_energyConstantParameters.push_back(0.0612282);
+      m_energyConstantParameters.push_back(5.40188e-05);
+      m_energyConstantParameters.push_back(-2.25384e-08);
+      m_energyConstantParameters.push_back(-0.172275);
+      m_energyConstantParameters.push_back(0.00132298);
+      m_energyConstantParameters.push_back(-7.55457e-07);
+    } */
+
+    /* if(NHadronicHit <= 500) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 500
+    {
+      m_energyConstantParameters.push_back(0.0769067); //Fit pour Nhcal <= 500
+      m_energyConstantParameters.push_back(-0.000196898);
+      m_energyConstantParameters.push_back(2.53412e-07);
+      m_energyConstantParameters.push_back(0.0473322);
+      m_energyConstantParameters.push_back(0.000266072);
+      m_energyConstantParameters.push_back(-4.16439e-07);
+      m_energyConstantParameters.push_back(9.53337e-11);
+      m_energyConstantParameters.push_back(0.0010317);
+      m_energyConstantParameters.push_back(-1.00613e-06);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0831314); //Fit pour Nhcal > 500
+      m_energyConstantParameters.push_back(-0.00012125);
+      m_energyConstantParameters.push_back(6.45192e-08);
+      m_energyConstantParameters.push_back(0.0158014);
+      m_energyConstantParameters.push_back(0.000146145);
+      m_energyConstantParameters.push_back(-6.67395e-08);
+      m_energyConstantParameters.push_back(-0.233927);
+      m_energyConstantParameters.push_back(0.00146132);
+      m_energyConstantParameters.push_back(-8.30274e-07);
+    } */
+
+   /*  m_energyConstantParameters.push_back(0.0230289); // Parametres du test beam
+    m_energyConstantParameters.push_back(2.44987e-05);
+    m_energyConstantParameters.push_back(-2.3439e-09);
+    m_energyConstantParameters.push_back(0.0842647);
+    m_energyConstantParameters.push_back(-9.84332e-06);
+    m_energyConstantParameters.push_back(-3.59319e-08);
+    m_energyConstantParameters.push_back(0.165651);
+    m_energyConstantParameters.push_back(0.000201247);
+    m_energyConstantParameters.push_back(-9.08974e-08); */
+
 
     /* m_energyConstantParameters.push_back(0.123637) //Parameters from calibration with correction taken in consideration;
     m_energyConstantParameters.push_back(-0.000238066);
@@ -1452,10 +1675,10 @@ namespace sdhcal_content
     m_energyConstantParameters.push_back(0.008447299643);  // Gamma2 */
 
     // Quadratic correction
-    const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit);
+    /* const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit);
     const float beta(m_energyConstantParameters.at(3) + m_energyConstantParameters.at(4)*NHadronicHit + m_energyConstantParameters.at(5)*NHadronicHit*NHadronicHit);
     const float gamma(m_energyConstantParameters.at(6) + m_energyConstantParameters.at(7)*NHadronicHit + m_energyConstantParameters.at(8)*NHadronicHit*NHadronicHit);
-    const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma);
+    const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma); */
 
 
 
@@ -1472,7 +1695,7 @@ namespace sdhcal_content
     }
     else
     { */
-      //const float hadEnergy(NHadronicHit1*0.0367023 + NHadronicHit2*0.0745279 + NHadronicHit3*0.363042); //Initial parameters corresponding to the Energy factors
+      const float hadEnergy(NHadronicHit1*0.0367023 + NHadronicHit2*0.0745279 + NHadronicHit3*0.363042); //Initial parameters corresponding to the Energy factors
       //const float hadEnergy(NHadronicHit1*0.0433771 + NHadronicHit2*0.088424 + NHadronicHit3*0.457353); //Parameters by Remi in his thesis
       //const float hadEnergy(NHadronicHit1*0.0383865 + NHadronicHit2*0.0637516 + NHadronicHit3*0.295323); //Parameters from TP script
       //const float hadEnergy(NHadronicHit1*0.5820827502 + NHadronicHit2*(-2.361240401) + NHadronicHit3*1.743809464); //Try GSL 10,30,80GeV linear
@@ -1506,7 +1729,8 @@ namespace sdhcal_content
 
 //const float hadEnergy(0.626581 + 0.37609*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.00049874*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 6, fonctionne
 
-//const float hadEnergy(0.7 + 0.37609*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.00049874*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 7, fonctionne tres bien, le meilleur lot avec cette methode pour le moment
+//BEST NTILDE SO FAR FOR KLONG
+//const float hadEnergy(0.7 + 0.37609*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2)) + 0.00049874*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))*(NHadronicHit3 + 0.197756 *(NHadronicHit1*0.273174 + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 7, fonctionne tres bien, le meilleur lot avec cette methode pour le moment, A FAIRE AVEC ELLE
 
 //const float hadEnergy(0.957621 + 0.419409*(NHadronicHit3 + 0.185099 *(NHadronicHit1*0.277335 + NHadronicHit2)) + 0.000774264*(NHadronicHit3 + 0.185099 *(NHadronicHit1*0.277335 + NHadronicHit2))*(NHadronicHit3 + 0.185099 *(NHadronicHit1*0.277335 + NHadronicHit2))); //Valeurs avec nouveaux fichiers de calibration en fixdirection et avec NTilde, test1, not good
       
@@ -1532,7 +1756,7 @@ namespace sdhcal_content
 //NTILDE A PARTIR DES EVENTS UDS POUR COEFF ET NTILDE
 //const float hadEnergy(4.11697 + 0.865048*(NHadronicHit3 + 0.113813 *(NHadronicHit1*0.247633 + NHadronicHit2)) - 0.000501047*(NHadronicHit3 + 0.113813 *(NHadronicHit1*0.247633 + NHadronicHit2))*(NHadronicHit3 + 0.113813 *(NHadronicHit1*0.247633 + NHadronicHit2))); 
 
-//Based on machine learning with sklearn, quadratic
+//Based on ML with sklearn, degree 2
 //const float hadEnergy(0.044191*NHadronicHit1 + 0.071432*NHadronicHit2 + 0.300506*NHadronicHit3 -0.000003*NHadronicHit1*NHadronicHit1 + 0.000086*NHadronicHit1*NHadronicHit2 -0.000552*NHadronicHit1*NHadronicHit3 -0.000089*NHadronicHit2*NHadronicHit2 -0.000007*NHadronicHit2*NHadronicHit3 + 0.003557*NHadronicHit3*NHadronicHit3);
 
 //Based on ML with sklearn, degree 3
@@ -1544,6 +1768,8 @@ namespace sdhcal_content
 //NTilde avec tous les coeffs determines par minimisation chi2
 //const float hadEnergy(1.33453 + 0.322512*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2)) + 4.53379e-05*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2))*(NHadronicHit3 + 0.244866 *(NHadronicHit1*0.401233  + NHadronicHit2))); //Nouvelle approche avec moyennes, fit sur moyennes de NTilde dans le barrel uniquement et correction en phi videau, test 7, fonctionne tres bien, le meilleur lot avec cette methode pour le moment
 
+//ML with sklearn degree 2, new calibration dataset 26/06/25
+//const float hadEnergy(0.030334*NHadronicHit1 + 0.086529*NHadronicHit2 + 0.320575*NHadronicHit3 + 0.000014*NHadronicHit1*NHadronicHit1 + 0.000190*NHadronicHit1*NHadronicHit2 - 0.000969*NHadronicHit1*NHadronicHit3 - 0.000403*NHadronicHit2*NHadronicHit2 + 0.000500*NHadronicHit2*NHadronicHit3 + 0.004948*NHadronicHit3*NHadronicHit3);
 
 //ML degré 3 en split pour Ntot = 400
 /* float hadEnergy;
@@ -1558,6 +1784,21 @@ else
 } */
 
 correctedEnergy = lumiHCALEnergy + emEnergy + hadEnergy;
+
+
+//Correction factor for linearity at low energies
+/* if(correctedEnergy<3)
+{
+  correctedEnergy = correctedEnergy / (0.0097*correctedEnergy + 0.7996); //Pas mal du tout, Initial fit
+  //correctedEnergy = correctedEnergy / (0.0097*correctedEnergy + 0.8996);
+} */
+
+//Correction factor for linearity in SDHCAL Only
+/* if(correctedEnergy<5)
+{
+  float corr_hadEnergy = hadEnergy / (0.0097*hadEnergy + 0.7996); //Pas mal du tout, Initial fit
+  correctedEnergy =  lumiHCALEnergy + emEnergy + corr_hadEnergy;
+} */
 
 /* Minimizer is Linear / Migrad
 Chi2                  	=  	11.9267
