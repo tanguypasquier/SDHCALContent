@@ -938,7 +938,7 @@ namespace sdhcal_content
           {
             if(fabs(m_sdhcalThresholds.at(0) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
             {
-              initialHadronic+=pCaloHit->GetInputEnergy();
+              initialHadronic+=pCaloHit->GetHadronicEnergy();
               if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
                 firstNHadronicHit1++;
               else
@@ -946,7 +946,7 @@ namespace sdhcal_content
             }
             else if(fabs(m_sdhcalThresholds.at(1) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
             {
-              initialHadronic+=pCaloHit->GetInputEnergy();
+              initialHadronic+=pCaloHit->GetHadronicEnergy();
               if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
                 firstNHadronicHit2++;
               else
@@ -954,7 +954,7 @@ namespace sdhcal_content
             }
             else if(fabs(m_sdhcalThresholds.at(2) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
             {
-              initialHadronic+=pCaloHit->GetInputEnergy();
+              initialHadronic+=pCaloHit->GetHadronicEnergy();
               if(pCaloHit->GetPseudoLayer() == (pCaloHit->GetLayer()+30)) //If pseudolayer!=layer+30, means the hit is in the other block
                 firstNHadronicHit3++;
               else
@@ -966,17 +966,17 @@ namespace sdhcal_content
             if(fabs(m_sdhcalThresholds.at(0) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
             { 
               endcapNHadronicHit1++;
-              initialHadronic+=pCaloHit->GetInputEnergy();
+              initialHadronic+=pCaloHit->GetHadronicEnergy();
             }
             else if(fabs(m_sdhcalThresholds.at(1) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
             {
               endcapNHadronicHit2++;
-              initialHadronic+=pCaloHit->GetInputEnergy();
+              initialHadronic+=pCaloHit->GetHadronicEnergy();
             }
             else if(fabs(m_sdhcalThresholds.at(2) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
             {
               endcapNHadronicHit3++;
-              initialHadronic+=pCaloHit->GetInputEnergy();
+              initialHadronic+=pCaloHit->GetHadronicEnergy();
             }
           }
           noShowerHit = false;
