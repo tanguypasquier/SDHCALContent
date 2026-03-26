@@ -896,7 +896,7 @@ namespace sdhcal_content
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   AngleCorrectionPlugin::AngleCorrectionPlugin() :
-       m_lowEnergyCut(3.f)
+       m_lowEnergyCut(0.f)
   {
   }
 
@@ -973,6 +973,7 @@ namespace sdhcal_content
         //emEnergy += pCaloHit->GetElectromagneticEnergy();
         emEnergy += pCaloHit->GetHadronicEnergy(); //We are looking at hadronic clusters so we need the right correction factor for the hit energy
         noShowerHit = false;
+        //std::cout << "ECAL HIT NORMAL VECTOR : " << pCaloHit->GetCellNormalVector() << std::endl;
       }
 
       else if(pCaloHit->GetHitType() == pandora::HCAL) //Only focus on SDHCAL corrections
@@ -980,6 +981,8 @@ namespace sdhcal_content
         if(pCaloHit->GetHitRegion() == pandora::BARREL)
         {
           //std::cout << pCaloHit->GetCellNormalVector() << std::endl;
+          //std::cout << "HCAL HIT NORMAL VECTOR : " << pCaloHit->GetCellNormalVector() << std::endl;
+          //std::cout << "HCAL HIT POSITION : " << pCaloHit->GetPositionVector() << std::endl;
           if(fabs(m_sdhcalThresholds.at(0) - pCaloHit->GetInputEnergy()) < std::numeric_limits<float>::epsilon())
           {
             initialHadronic+=pCaloHit->GetHadronicEnergy();
@@ -1082,11 +1085,24 @@ namespace sdhcal_content
     const float thetaAngle(std::acos(clusterCosTheta)); //Theta angle
     const float clusterSinTheta(std::sin(thetaAngle)); //Sin thecosOrSinAngla for the barrel correction 
 
-    //Sum the corrected number of hits for each tresholds
-    NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(barrelNHadronicHit1, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit1, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
+    //Sum the corrected number of hits for each tresholds : Correction for endcap and barrel
+    /* NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(barrelNHadronicHit1, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit1, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
     NHadronicHit2 = initialNHit2 + this->GetCorrectedHitNumber(barrelNHadronicHit2, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit2, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit2, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit2, clusterCosPhiPrime);
     NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(barrelNHadronicHit3, clusterSinTheta) + this->GetCorrectedHitNumber(endcapNHadronicHit3, clusterCosTheta) + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
  
+ */
+    //Sum the corrected number of hits for each tresholds : Correction for barrel only
+    NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(barrelNHadronicHit1, clusterSinTheta) + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
+    NHadronicHit2 = initialNHit2 + this->GetCorrectedHitNumber(barrelNHadronicHit2, clusterSinTheta) + this->GetCorrectedHitNumber(firstNHadronicHit2, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit2, clusterCosPhiPrime);
+    NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(barrelNHadronicHit3, clusterSinTheta) + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
+ 
+
+
+
+    //For fixdirection displaced Tesla or no angular correction 
+   /*  NHadronicHit1 = initialNHit1;
+    NHadronicHit2 = initialNHit2;
+    NHadronicHit3 = initialNHit3; */
 
 
     /* NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
@@ -1094,10 +1110,7 @@ namespace sdhcal_content
     NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
  */
 
-    //For fixdirection displaced Tesla 
-    /* NHadronicHit1 = initialNHit1;
-    NHadronicHit2 = initialNHit2;
-    NHadronicHit3 = initialNHit3; */
+    
 
 
     //Calculate the corrected total number of hits
@@ -1207,18 +1220,6 @@ namespace sdhcal_content
     m_energyConstantParameters.push_back(0.327413);
     m_energyConstantParameters.push_back(9.85861e-05);
     m_energyConstantParameters.push_back(9.99891e-11); */
-
-   /*  m_energyConstantParameters.push_back(0.063000);    // était 0.0645514 → -2.4% Calibration test v5bis ajuste
-    m_energyConstantParameters.push_back(-0.000117);   // inchangé (très léger)
-    m_energyConstantParameters.push_back(7.1818e-08);  // inchangé
-    m_energyConstantParameters.push_back(0.041000);    // était 0.0422478 → -2.95%
-    m_energyConstantParameters.push_back(0.000139);    // légère baisse
-    m_energyConstantParameters.push_back(-9.17877e-08); // inchangé
-    m_energyConstantParameters.push_back(1e-10);        // inchangé (négligeable)
-    m_energyConstantParameters.push_back(0.001105);     // était 0.00112138 → -1.4%
-    m_energyConstantParameters.push_back(-6.43333e-07); // inchangé */
-    
-
 
 
     /* if(pCluster->GetNCaloHits() > 400) //Deuxieme test de split avec la formule Quad test 2 et l'autre formule : TRES BON !
@@ -1446,7 +1447,7 @@ namespace sdhcal_content
       m_energyConstantParameters.push_back(-6.62026e-07);
     } */
 
- /*    if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 et chevauchement des formules : MEILLEURE COMBINAISON, Split 400 Quad APRIL Overlap
+ /*    if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 et chevauchement des formules : MEILLEURE COMBINAISON, Split 400 Quad APRIL Overlap, ANCIENNE CALIBRATION
     {
       m_energyConstantParameters.push_back(0.0724106); //Fit pour Nhcal <= 600
       m_energyConstantParameters.push_back(-0.000147888);
@@ -1471,30 +1472,6 @@ namespace sdhcal_content
       m_energyConstantParameters.push_back(-5.10375e-07);
     } */
 
-   /*  if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 et chevauchement des formules : NOUVELLE CALIBRATION, Split 400 Quad APRIL Overlap
-    {
-      m_energyConstantParameters.push_back(0.0712495);  //Fit pour Nhcal <= 600
-      m_energyConstantParameters.push_back(-0.000186449);
-      m_energyConstantParameters.push_back(1.97156e-07);
-      m_energyConstantParameters.push_back(0.0153121);
-      m_energyConstantParameters.push_back(0.00045658);
-      m_energyConstantParameters.push_back(-6.3797e-07);
-      m_energyConstantParameters.push_back(1.28742e-12);
-      m_energyConstantParameters.push_back(0.00100913);
-      m_energyConstantParameters.push_back(-5.59527e-07);
-    }
-    else
-    {
-      m_energyConstantParameters.push_back(0.0350654);  // Fit pour Nhcal > 400 
-      m_energyConstantParameters.push_back(-3.84159e-05);
-      m_energyConstantParameters.push_back(2.40987e-08);
-      m_energyConstantParameters.push_back(0.137626);
-      m_energyConstantParameters.push_back(-0.00012783);
-      m_energyConstantParameters.push_back(7.27967e-08);
-      m_energyConstantParameters.push_back(1e-10);
-      m_energyConstantParameters.push_back(0.00113873);
-      m_energyConstantParameters.push_back(-6.63919e-07);
-    } */
 
     /* if(NHadronicHit <= 350) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 350
     {
@@ -1674,16 +1651,202 @@ namespace sdhcal_content
     m_energyConstantParameters.push_back(-2.700219853);     // Gamma1
     m_energyConstantParameters.push_back(0.008447299643);  // Gamma2 */
 
+
+    /*#####################################################################################
+
+PARAMETRES UTILISES EN DATE DU 27/08/2025 et pour l'article : 
+
+##################################################################################### */
+
+
+// Split method : 
+
+   /*  if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 et chevauchement des formules : NOUVELLE CALIBRATION, Split 400 Quad APRIL Overlap
+    {
+      m_energyConstantParameters.push_back(0.0712495);  //Fit pour Nhcal <= 600
+      m_energyConstantParameters.push_back(-0.000186449);
+      m_energyConstantParameters.push_back(1.97156e-07);
+      m_energyConstantParameters.push_back(0.0153121);
+      m_energyConstantParameters.push_back(0.00045658);
+      m_energyConstantParameters.push_back(-6.3797e-07);
+      m_energyConstantParameters.push_back(1.28742e-12);
+      m_energyConstantParameters.push_back(0.00100913);
+      m_energyConstantParameters.push_back(-5.59527e-07);
+    }
+    else
+    {
+      m_energyConstantParameters.push_back(0.0350654);  // Fit pour Nhcal > 400 
+      m_energyConstantParameters.push_back(-3.84159e-05);
+      m_energyConstantParameters.push_back(2.40987e-08);
+      m_energyConstantParameters.push_back(0.137626);
+      m_energyConstantParameters.push_back(-0.00012783);
+      m_energyConstantParameters.push_back(7.27967e-08);
+      m_energyConstantParameters.push_back(1e-10);
+      m_energyConstantParameters.push_back(0.00113873);
+      m_energyConstantParameters.push_back(-6.63919e-07);
+    }
+ */
+    //Quad v5 ajustee 
+
+    /* m_energyConstantParameters.push_back(0.063000);    // était 0.0645514 → -2.4% Calibration test v5bis ajuste
+    m_energyConstantParameters.push_back(-0.000117);   // inchangé (très léger)
+    m_energyConstantParameters.push_back(7.1818e-08);  // inchangé
+    m_energyConstantParameters.push_back(0.041000);    // était 0.0422478 → -2.95%
+    m_energyConstantParameters.push_back(0.000139);    // légère baisse
+    m_energyConstantParameters.push_back(-9.17877e-08); // inchangé
+    m_energyConstantParameters.push_back(1e-10);        // inchangé (négligeable)
+    m_energyConstantParameters.push_back(0.001105);     // était 0.00112138 → -1.4%
+    m_energyConstantParameters.push_back(-6.43333e-07); // inchangé */
+
+
+    //ML with sklearn degree 2, new calibration dataset 26/06/25
+    //const float hadEnergy(0.030334*NHadronicHit1 + 0.086529*NHadronicHit2 + 0.320575*NHadronicHit3 + 0.000014*NHadronicHit1*NHadronicHit1 + 0.000190*NHadronicHit1*NHadronicHit2 - 0.000969*NHadronicHit1*NHadronicHit3 - 0.000403*NHadronicHit2*NHadronicHit2 + 0.000500*NHadronicHit2*NHadronicHit3 + 0.004948*NHadronicHit3*NHadronicHit3);
+
+    
+    //New linear from 23/03/2026
+    //const float hadEnergy(NHadronicHit1*0.0266353 + NHadronicHit2*0.0845651 + NHadronicHit3*0.392432); //Initial parameters corresponding to the Energy factors
+
+
+    //Split ML 
+    /* float hadEnergy=0;
+    if(NHadronicHit <= 400) //Test de split propre avec ajustement sur les deux ranges pour Nhcal = 600 et chevauchement des formules : NOUVELLE CALIBRATION, Split 400 Quad APRIL Overlap
+    {
+      //Fit pour Nhcal <= 600
+      hadEnergy = 0.047063*NHadronicHit1 + 0.090626*NHadronicHit2 + 0.112550*NHadronicHit3 - 0.000002*NHadronicHit1*NHadronicHit1 + 0.000241*NHadronicHit1*NHadronicHit2 - 0.001243*NHadronicHit1*NHadronicHit3 - 0.000774*NHadronicHit2*NHadronicHit2 + 0.002010*NHadronicHit2*NHadronicHit3 + 0.006763*NHadronicHit3*NHadronicHit3;
+    }
+    else
+    {
+      //Fit pour Nhcal > 400
+      hadEnergy = 0.020230*NHadronicHit1 + 0.092169*NHadronicHit2 + 0.410529*NHadronicHit3 + 0.000022*NHadronicHit1*NHadronicHit1 + 0.000223*NHadronicHit1*NHadronicHit2 - 0.001053*NHadronicHit1*NHadronicHit3 - 0.000496*NHadronicHit2*NHadronicHit2 + 0.000595*NHadronicHit2*NHadronicHit3 + 0.004536*NHadronicHit3*NHadronicHit3;
+    } */
+
+
+    // Digital for nhits <50 and split/quad semi digital above that
+    /* float alpha;
+    float beta;
+    float gamma;
+    float hadEnergy;
+
+    if(NHadronicHit <= 50)
+    {
+      alpha = 0.108685;
+      beta = -0.00112468;
+      gamma = 3.63595e-06;
+      hadEnergy = NHadronicHit * alpha + NHadronicHit * NHadronicHit * beta + NHadronicHit * NHadronicHit * NHadronicHit * gamma;
+    }
+    else
+    {
+      alpha = m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit;
+      beta = m_energyConstantParameters.at(3) + m_energyConstantParameters.at(4)*NHadronicHit + m_energyConstantParameters.at(5)*NHadronicHit*NHadronicHit;
+      gamma = m_energyConstantParameters.at(6) + m_energyConstantParameters.at(7)*NHadronicHit + m_energyConstantParameters.at(8)*NHadronicHit*NHadronicHit;
+      hadEnergy = NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma;
+    } */
+
+    // Digital for nhits <50 and split/quad semi digital above that
+    /* float alpha;
+    float beta;
+    float gamma;
+    float hadEnergy;
+
+    if(NHadronicHit <= 50)
+    {
+      alpha = 0.10218;
+      beta = -0.00107992;
+      gamma = 5.5504e-06;
+      hadEnergy = NHadronicHit * alpha + NHadronicHit * NHadronicHit * beta + NHadronicHit * NHadronicHit * NHadronicHit * gamma;
+    }
+    else
+    {
+      alpha = m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit;
+      beta = m_energyConstantParameters.at(3) + m_energyConstantParameters.at(4)*NHadronicHit + m_energyConstantParameters.at(5)*NHadronicHit*NHadronicHit;
+      gamma = m_energyConstantParameters.at(6) + m_energyConstantParameters.at(7)*NHadronicHit + m_energyConstantParameters.at(8)*NHadronicHit*NHadronicHit;
+      hadEnergy = NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma;
+    } */
+
+    /* // Digital for nhits <50 and linear semi digital above that
+    float alpha;
+    float beta;
+    float gamma;
+    float hadEnergy;
+
+    if(NHadronicHit <= 50)
+    {
+      alpha = 0.0841043;
+      hadEnergy = NHadronicHit * alpha;
+    }
+    else
+    {
+      hadEnergy = NHadronicHit1*0.0367023 + NHadronicHit2*0.0745279 + NHadronicHit3*0.363042;
+    } */
+
+    // Digital for nhits <50 and ML semi digital above that
+    /* float alpha;
+    float beta;
+    float gamma;
+    float hadEnergy;
+
+    if(NHadronicHit <= 50)
+    {
+      alpha = 0.0841043;
+      hadEnergy = NHadronicHit * alpha;
+    }
+    else
+    {
+      hadEnergy = 0.030334*NHadronicHit1 + 0.086529*NHadronicHit2 + 0.320575*NHadronicHit3 + 0.000014*NHadronicHit1*NHadronicHit1 + 0.000190*NHadronicHit1*NHadronicHit2 - 0.000969*NHadronicHit1*NHadronicHit3 - 0.000403*NHadronicHit2*NHadronicHit2 + 0.000500*NHadronicHit2*NHadronicHit3 + 0.004948*NHadronicHit3*NHadronicHit3;
+    } */
+
+
+    // Digital for nhits <50 and linear semi digital above that
+    /* float alpha;
+    float beta;
+    float gamma;
+    float hadEnergy;
+
+    if(NHadronicHit <= 50)
+    {
+      alpha = 0.108685;
+      beta = -0.00112468;
+      gamma = 3.63595e-06;
+      hadEnergy = NHadronicHit * alpha + NHadronicHit * NHadronicHit * beta + NHadronicHit * NHadronicHit * NHadronicHit * gamma;
+    }
+    else
+    {
+      hadEnergy = NHadronicHit1*0.0367023 + NHadronicHit2*0.0745279 + NHadronicHit3*0.363042;
+    } */
+
+    // Digital for nhits <50 and ML semi digital above that
+    /* float alpha;
+    float beta;
+    float gamma;
+    float hadEnergy;
+
+    if(NHadronicHit <= 50)
+    {
+      alpha = 0.108685;
+      beta = -0.00112468;
+      gamma = 3.63595e-06;
+      hadEnergy = NHadronicHit * alpha + NHadronicHit * NHadronicHit * beta + NHadronicHit * NHadronicHit * NHadronicHit * gamma;
+    }
+    else
+    {
+      hadEnergy = 0.030334*NHadronicHit1 + 0.086529*NHadronicHit2 + 0.320575*NHadronicHit3 + 0.000014*NHadronicHit1*NHadronicHit1 + 0.000190*NHadronicHit1*NHadronicHit2 - 0.000969*NHadronicHit1*NHadronicHit3 - 0.000403*NHadronicHit2*NHadronicHit2 + 0.000500*NHadronicHit2*NHadronicHit3 + 0.004948*NHadronicHit3*NHadronicHit3;
+    } */
+
+    /*#####################################################################################
+
+##################################################################################### */
+
     // Quadratic correction
     /* const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit);
     const float beta(m_energyConstantParameters.at(3) + m_energyConstantParameters.at(4)*NHadronicHit + m_energyConstantParameters.at(5)*NHadronicHit*NHadronicHit);
     const float gamma(m_energyConstantParameters.at(6) + m_energyConstantParameters.at(7)*NHadronicHit + m_energyConstantParameters.at(8)*NHadronicHit*NHadronicHit);
     const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma); */
 
-
+    
+    
 
     //Linear correction
-   /*  const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit);
+    /* const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit);
     const float beta(m_energyConstantParameters.at(2) + m_energyConstantParameters.at(3)*NHadronicHit);
     const float gamma(m_energyConstantParameters.at(4) + m_energyConstantParameters.at(5)*NHadronicHit);
     const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma); */
