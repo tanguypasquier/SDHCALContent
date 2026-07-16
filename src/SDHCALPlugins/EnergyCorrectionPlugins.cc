@@ -1098,9 +1098,15 @@ namespace sdhcal_content
  
 
 
+    //Sum the corrected number of hits for each tresholds : Correction for barrel only, phi only
+    /* NHadronicHit1 = initialNHit1 + this->GetCorrectedHitNumber(firstNHadronicHit1, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit1, clusterCosPhiPrime);
+    NHadronicHit2 = initialNHit2 + this->GetCorrectedHitNumber(firstNHadronicHit2, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit2, clusterCosPhiPrime);
+    NHadronicHit3 = initialNHit3 + this->GetCorrectedHitNumber(firstNHadronicHit3, clusterCosPhi) + this->GetCorrectedHitNumber(secondNHadronicHit3, clusterCosPhiPrime);
+  */
+
 
     //For fixdirection displaced Tesla or no angular correction 
-   /*  NHadronicHit1 = initialNHit1;
+    /* NHadronicHit1 = initialNHit1;
     NHadronicHit2 = initialNHit2;
     NHadronicHit3 = initialNHit3; */
 
@@ -1688,7 +1694,7 @@ PARAMETRES UTILISES EN DATE DU 27/08/2025 et pour l'article :
  */
     //Quad v5 ajustee 
 
-    /* m_energyConstantParameters.push_back(0.063000);    // était 0.0645514 → -2.4% Calibration test v5bis ajuste
+    m_energyConstantParameters.push_back(0.063000);    // était 0.0645514 → -2.4% Calibration test v5bis ajuste
     m_energyConstantParameters.push_back(-0.000117);   // inchangé (très léger)
     m_energyConstantParameters.push_back(7.1818e-08);  // inchangé
     m_energyConstantParameters.push_back(0.041000);    // était 0.0422478 → -2.95%
@@ -1696,7 +1702,7 @@ PARAMETRES UTILISES EN DATE DU 27/08/2025 et pour l'article :
     m_energyConstantParameters.push_back(-9.17877e-08); // inchangé
     m_energyConstantParameters.push_back(1e-10);        // inchangé (négligeable)
     m_energyConstantParameters.push_back(0.001105);     // était 0.00112138 → -1.4%
-    m_energyConstantParameters.push_back(-6.43333e-07); // inchangé */
+    m_energyConstantParameters.push_back(-6.43333e-07); // inchangé
 
 
     //ML with sklearn degree 2, new calibration dataset 26/06/25
@@ -1742,7 +1748,7 @@ PARAMETRES UTILISES EN DATE DU 27/08/2025 et pour l'article :
       hadEnergy = NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma;
     } */
 
-    // Digital for nhits <50 and split/quad semi digital above that
+    // Digital for nhits <125 and split/quad semi digital above that
     /* float alpha;
     float beta;
     float gamma;
@@ -1750,9 +1756,9 @@ PARAMETRES UTILISES EN DATE DU 27/08/2025 et pour l'article :
 
     if(NHadronicHit <= 50)
     {
-      alpha = 0.10218;
-      beta = -0.00107992;
-      gamma = 5.5504e-06;
+      alpha = 0.232152;
+      beta = -0.00762851;
+      gamma = 8.65433e-05;
       hadEnergy = NHadronicHit * alpha + NHadronicHit * NHadronicHit * beta + NHadronicHit * NHadronicHit * NHadronicHit * gamma;
     }
     else
@@ -1837,13 +1843,13 @@ PARAMETRES UTILISES EN DATE DU 27/08/2025 et pour l'article :
 ##################################################################################### */
 
     // Quadratic correction
-    /* const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit);
+    const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit + m_energyConstantParameters.at(2)*NHadronicHit*NHadronicHit);
     const float beta(m_energyConstantParameters.at(3) + m_energyConstantParameters.at(4)*NHadronicHit + m_energyConstantParameters.at(5)*NHadronicHit*NHadronicHit);
     const float gamma(m_energyConstantParameters.at(6) + m_energyConstantParameters.at(7)*NHadronicHit + m_energyConstantParameters.at(8)*NHadronicHit*NHadronicHit);
-    const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma); */
+    const float hadEnergy(NHadronicHit1*alpha + NHadronicHit2*beta + NHadronicHit3*gamma);
+    
 
-    
-    
+
 
     //Linear correction
     /* const float alpha(m_energyConstantParameters.at(0) + m_energyConstantParameters.at(1)*NHadronicHit);
@@ -1858,7 +1864,7 @@ PARAMETRES UTILISES EN DATE DU 27/08/2025 et pour l'article :
     }
     else
     { */
-      const float hadEnergy(NHadronicHit1*0.0367023 + NHadronicHit2*0.0745279 + NHadronicHit3*0.363042); //Initial parameters corresponding to the Energy factors
+      // const float hadEnergy(NHadronicHit1*0.0367023 + NHadronicHit2*0.0745279 + NHadronicHit3*0.363042); //Initial parameters corresponding to the Energy factors
       //const float hadEnergy(NHadronicHit1*0.0433771 + NHadronicHit2*0.088424 + NHadronicHit3*0.457353); //Parameters by Remi in his thesis
       //const float hadEnergy(NHadronicHit1*0.0383865 + NHadronicHit2*0.0637516 + NHadronicHit3*0.295323); //Parameters from TP script
       //const float hadEnergy(NHadronicHit1*0.5820827502 + NHadronicHit2*(-2.361240401) + NHadronicHit3*1.743809464); //Try GSL 10,30,80GeV linear
